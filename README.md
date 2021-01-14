@@ -7,12 +7,13 @@ WS 20/21
 
 ### Vorbereitung zur LV
 
-Wir werden in der LV einiges installieren. Sie können auch auf ihrem eigenen Laptop arbeiten,
-dann müssen sie noch mehr installieren.
+
 
 #### Software
-Installieren sie folgende Software (es ist wichtig, dass sie die neuesten Versionen installieren):
-(im Labor sollte das vorinstalliert sein)
+Installieren Sie auf Ihrem Rechner folgende Software (es ist wichtig, dass sie die neuesten Versionen installieren)
+
+JASP von https://jasp-stats.org
+
 
 R (von https://cran.r-project.org)
 RStudio (von https://rstudio.com/products/rstudio/download/#download)

@@ -1,0 +1,175 @@
+---
+title: "Funktionen und ihre Zusammensetzung"
+date: "8. Jänner 2020"
+author: "Erich Neuwirth"
+header-includes:
+   - \usepackage{xcolor}
+   - \usepackage{fouriernc}
+   - \usepackage[T1]{fontenc}
+output:
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE}
+library(magrittr)
+```
+
+Funktionen in klassischer Formelschreibweise
+
+$$
+\begin{split}
+f_1(x) = x^2 \\
+f_2(x) = x+3 \\
+f_3(x) = \sqrt{x}
+\end{split}
+$$
+
+Zuerst $f_1$, dann $f_2$ und dann $f_3$ anwenden
+
+$$
+f_3(f_2(f_1(x)))=\sqrt{x^2+3}
+$$
+
+Wir schreiben Funktionen als Transformationsmaschinen
+
+$$
+\begin{split}
+f_1 : x \mapsto x^2 \\
+f_2 : x \mapsto x+3 \\
+f_3 : x \mapsto \sqrt{x}
+\end{split}
+$$
+
+Zusammensetzung in „natürlicher“ Reihenfolge
+
+$$
+ x \overset{f_1}{\mapsto} x^2  \overset{f_2}{\mapsto} x^2+3  \overset{f_3}{\mapsto} \sqrt{x^2+3}
+$$
+
+Manchmal entsteht Verwirrung, weil $x$ in drei Ausdrücken in verschiedener Bedeuting vorkommt, nämlich als Platzhalter für Input in verschiedenen „Funktionsmaschinen“.    
+Daher vergeben wir in jeder Maschinen einen neuen Namen für den Input.
+
+
+$$
+\begin{split}
+f_1(x) = x^2 \\
+f_2(y) = y+3 \\
+f_3(z) = \sqrt{z}
+\end{split}
+$$
+Dann schauen die entsprechenden Funktionsmaschinen so aus:
+
+$$
+\begin{split}
+f_1 : x \mapsto x^2 \\
+f_2 : y \mapsto y+3 \\
+f_3 : z \mapsto \sqrt{z}
+\end{split}
+$$
+
+Und das ist die Funktionszusammensetzung
+
+$$
+ x \overset{f_1}{\mapsto} x^2 = y  \overset{f_2}{\mapsto} y+3 = x^2+3 = z  \overset{f_3}{\mapsto} \sqrt{z}=\sqrt{x^2+3}
+$$
+
+\newpage
+
+Ersetzen wir die Variable $x$ durch ein unverfänglicheres Symbol, einen roten Punkt
+
+$$
+\begin{split}
+f_1({\color{red}{\large\bullet}})= {\color{red}{\large\bullet}}^2 \\
+f_2({\color{red}{\large\bullet}}) = {\color{red}{\large\bullet}}+3 \\
+f_3({\color{red}{\large\bullet}}) = \sqrt{\color{red}{\large\bullet}}
+\end{split}
+$$
+
+Dann ist das die Gleichungsschreibweise der Zusammensetzung
+
+$$
+f_3(f_2(f_1({\color{red}{\large\bullet}})))=\sqrt{{\color{red}{\large\bullet}}^2+3}
+$$
+
+und das die „Funktionsmaschinenschreibweise“ in natürlicher Reihenfolge
+
+$$
+{\color{red}{\large\bullet}} \overset{f_1}{\mapsto} {\color{red}{\large\bullet}}^2  \overset{f_2}{\mapsto} {\color{red}{\large\bullet}}^2+3  \overset{f_3}{\mapsto} \sqrt{{\color{red}{\large\bullet}}^2+3}
+$$
+
+Auch hier kann Verwirrung entstehen, weil der rote Punkt in 3 verschiedenen Maschinen
+verschiedene Inputs „aufsaugt“. Wir verwenden daher für die verschiedenen Maschinen
+verschiedenfarbige Punkte
+
+$$
+\begin{split}
+f_1({\color{red}{\large\bullet}})= {\color{red}{\large\bullet}}^2 \\
+f_2({\color{blue}{\large\bullet}}) = {\color{blue}{\large\bullet}}+3 \\
+f_3({\color{green}{\large\bullet}}) = \sqrt{\color{green}{\large\bullet}}
+\end{split}
+$$
+
+\
+Funktionsmaschinenschreibweise:
+
+$$
+\begin{split}
+f_1 : {\color{red}{\large\bullet}} \mapsto {\color{red}{\large\bullet}}^2 \\
+f_2 :  {\color{blue}{\large\bullet}}  \mapsto {\color{blue}{\large\bullet}}+3 \\
+f_3 : {\color{green}{\large\bullet}} \mapsto \sqrt{\color{green}{\large\bullet}}
+\end{split}
+$$
+
+
+Zusammensetzung
+
+$$
+{\color{red}{\large\bullet}} \overset{f_1}{\mapsto} {\color{red}{\large\bullet}}^2 =
+{\color{blue}{\large\bullet}}
+\overset{f_2}{\mapsto} {\color{blue}{\large\bullet}}+3 =  {\color{red}{\large\bullet}}^2+3 =
+{\color{green}{\large\bullet}}
+\overset{f_3}{\mapsto} \sqrt{{\color{green}{\large\bullet}}} 
+= \sqrt{{\color{red}{\large\bullet}}^2+3}
+$$
+
+Zusammensetzung komprimiert
+
+$$
+{\color{red}{\large\bullet}} \overset{f_1}{\mapsto} {\color{red}{\large\bullet}}^2
+\overset{f_2}{\mapsto}  {\color{red}{\large\bullet}}^2+3 
+\overset{f_3}{\mapsto} 
+\sqrt{{\color{red}{\large\bullet}}^2+3}
+$$
+
+\newpage
+
+In R mit piping package sieht das so aus:
+
+```{r}
+f1 <- function(x) x^2
+f2 <- function(y) y+3
+f3 <- function(z)sqrt(z)
+```
+
+Klassisches Programmieren
+
+```{r}
+f3(f2(f1(2)))
+```
+ 
+ Schreibweise mit piping
+ 
+```{r}
+2 %>% f1 %>% f2 %>% f3
+```
+ 
+Oder mit sauberer Syntax
+
+```{r}
+2 %>% f1() %>% f2() %>% f3()
+```
+
