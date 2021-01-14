@@ -1,0 +1,202 @@
+---
+title: "Lottodaten laden"
+author: "Erich Neuwirth"
+date: "12/26/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+```{r, message=FALSE}
+library(tidyverse)
+library(magrittr)
+library(readxl)
+library(pracma)
+library(readr)
+```
+
+
+```{r}
+curl::curl_download("https://www.win2day.at/media/NN_W2D_STAT_Lotto_2020.csv",
+                    file.path("Lottodata","NN_W2D_STAT_Lotto_2020.csv"))
+```
+
+
+https://www.win2day.at/media/NN_W2D_STAT_Lotto_2020.csv
+
+```{r}
+load("lotto_aut_upto_2019.RData")
+```
+
+
+
+```{r}
+spieldaten <- read_excel("Lotto 6 aus 45_Gewinnraenge.xlsx","SpielBed")
+```
+
+
+```{}
+gewinne  <- read_excel("LottoAnalyse.xlsx","RawData",
+                       col_types=c("date",rep("numeric",9),"text","numeric","text",rep("numeric",13))) %>%
+  mutate(Anzahl6=as.numeric(Anzahl6)) %>%
+  mutate(Anzahl6=ifelse(is.na(Anzahl6),0,Anzahl6)) %>%
+  mutate(Anzahl5M=as.numeric(Anzahl5M)) %>%
+  mutate(Anzahl5M=ifelse(is.na(Anzahl5M),0,Anzahl5M))
+```
+
+```{r}
+find_stichtag <- function(indate){
+  spieldaten$StartDatum %>% keep(.<=indate) %>% max()
+}
+```
+
+```{r}
+lnew_part <- read_csv2(file.path("Lottodata","NN_W2D_STAT_Lotto_2020.csv"),
+                 locale=locale(encoding="latin1"))
+lnew_part_1 <- lnew_part %>% slice(seq(1,nrow(lnew_part),2)) %>% select(1:26)
+lnew_part_2 <- lnew_part %>% slice(seq(2,nrow(lnew_part),2)) %>% select(11:26)  %>%
+  mutate(Anzahl_1_5=as.numeric(str_replace_all(Anzahl_1_5,"\\.",""))) %>%
+  mutate(Anzahl_2_6=as.numeric(str_replace_all(Anzahl_2_6,"\\.","")))
+lnew_part_1 %<>% select(-starts_with("a",ignore.case = FALSE)) 
+lnew_part_2 %<>% select(-starts_with("a",ignore.case = FALSE)) %>%
+  select(-(seq(1,10,3)))
+names(lnew_part_2) <- paste0("var",1:ncol(lnew_part_2))
+lnew <- bind_cols(lnew_part_1,lnew_part_2)
+```
+
+
+```{r}
+lnew %<>% 
+  select(-starts_with("Rang",ignore.case = FALSE)) %>% 
+  select(-ZZ) %>%
+  mutate(Runde=1:nrow(lnew)) %>% 
+  mutate(Rtot=Runde+nrow(lotto_aut_upto_2019)) %>%
+  select(Datum,Runde,Rtot,Zahl1:var8,Reihenfolge) %>%
+  mutate(Datum=as.POSIXct(paste0(Datum,"2020"),format="%d.%m.%Y",tz="GMT"))  %>%
+  mutate(Anzahl_1_5=as.numeric(Anzahl_1_5)) %>%
+  mutate(Anzahl_1_5=ifelse(is.na(Anzahl_1_5),0,Anzahl_1_5)) %>%
+  mutate(Anzahl_2_6=as.numeric(Anzahl_2_6)) %>%
+  mutate(Anzahl_2_6=ifelse(is.na(Anzahl_2_6),0,Anzahl_2_6)) 
+  names(lnew)[-(ncol(lnew))] <- names(lotto_aut_upto_2019)[1:26]
+  lotto_aut <- bind_rows(lotto_aut_upto_2019[,1:26],lnew)
+```
+
+```{r}
+lotto_aut %<>% mutate(StartDatum=Vectorize(find_stichtag)(Datum))
+class(lotto_aut$StartDatum) <- class(lotto_aut$Datum)
+lotto_aut %<>%  left_join(spieldaten) %>%
+  mutate(Reihenfolge=ifelse(Datum<=as.POSIXct("2017-12-31"),"gezogen","aufsteigend"))
+```
+
+
+```{r}
+restarted_cumsum <- function(x){
+  y <- numeric(length(x))
+  y[1] <- x[1]
+  for (i in 2:length(x)){
+    if ((x[i])==0) y[i] <- 0 else y[i] <- y[i-1]+x[i] 
+  }
+  y
+}
+```
+
+
+```{r}
+weeknum <-function(Datum){
+#  xxx<-floor((1+julian(Datum)-julian(as.POSIXct("1986-09-13")))/ 7)
+  xxx<-floor(julian(Datum,as.POSIXct("1986-09-15","UTC"))/ 7)+2
+  attributes(xxx) <- NULL
+  xxx
+}
+```
+
+```{r}
+#Sys.setlocale("LC_TIME", "de_DE.UTF-8")
+Sys.setlocale("LC_TIME", "de_DE.UTF-8")
+lotto_aut %<>% mutate(Summe6=Anzahl6*Gewinn6,
+                    Summe5M=Anzahl5M*Gewinn5M,
+                    Summe5O=Anzahl5O*Gewinn5O,
+                    Summe4M=Anzahl4M*Gewinn4M,
+                    Summe4O=Anzahl4O*Gewinn4O,
+                    Summe3M=Anzahl3M*Gewinn3M,
+                    Summe3O=Anzahl3O*Gewinn3O,
+                    SummeZZ=AnzahlZZ*GewinnZZ,
+                    Tipps=Summe5O/(AuszQuote*Preis*Quote5O),
+                    Jackpot=restarted_cumsum(ifelse(Anzahl6==0,1,0)),
+                    JackpotDavor=lag(Jackpot,default=0),
+                    ProWoche=ifelse(Datum <= as.POSIXct("1997-09-03"),1,2),
+                    Wochentag=ifelse(ProWoche==1,"Sonntag",ifelse(weekdays(Datum)=="Sonntag","Sonntag","Mittwoch")),
+                    woche=weeknum(Datum))
+```
+
+```{r}
+lotto_aut %<>%
+  mutate(Period=ifelse(Datum <= as.POSIXct("1997-09-02"),"alt","neu")) %>%
+  mutate(Typ=paste(Period,Wochentag,sep=":")) %>%
+  mutate(Typ=factor(Typ,levels=c("alt:So","neu:So","neu:Mi"))) %>%
+  mutate_at(vars(Zahl1:Zahl6),list(hi=~ifelse(.>31,1,0))) %>%
+  mutate(Hohe = Zahl1_hi+Zahl2_hi+Zahl3_hi+Zahl4_hi+Zahl5_hi+Zahl6_hi) %>%
+  select(-(Zahl1_hi:Zahl6_hi)) %>%
+  mutate(ZZhoch=ifelse(Zahl7>31,1,0))
+```
+
+```{r}
+lotto_aut %<>%  
+  mutate(aufgestockt = (Währung == "EUR") & (Summe6 <= 1000000) & (Summe6 >= 999999))
+```
+
+```{r}
+lotto_aut %>% names()
+```
+
+
+```{r}
+save(lotto_aut,file="lotto_aut.RData")
+```
+
+```{r}
+other_day <- function(Wochentag){
+  ifelse(Wochentag ==("Sonntag"),"Mittwoch","Sonntag") 
+}
+```
+
+
+```{r}
+lotto_aut_condensed <-
+  lotto_aut %>%
+  select(Datum,Runde,Rtot,Anzahl6,Gewinn6,Summe6,AuszQuote,Quote6,Preis,Tipps,
+         JackpotDavor,Wochentag,Typ,aufgestockt) %>%
+  mutate(kettenende=ifelse(Anzahl6>0,1,0)) %>%
+  mutate(kettenbeginn=lag(kettenende,default=1)) %>%
+  mutate(kettennum=cumsum(kettenbeginn)) %>%
+  group_by(kettennum) %>%
+  mutate(num_in_k=row_number()) %>%
+  ungroup() %>% 
+  arrange(kettennum,desc(num_in_k)) %>% 
+  group_by(kettennum) %>%
+  mutate(runden_zum_ende=row_number()-1) %>%
+  ungroup() %>% 
+  arrange(kettennum,num_in_k) %>%
+  mutate(Kettennum=kettennum) %>% 
+  mutate(Num_in_kette=num_in_k) %>%
+  mutate(Num_bis_ende=runden_zum_ende) %>%
+  mutate(Kettenlaenge=runden_zum_ende+num_in_k) %>%
+  mutate(Kettenstart=(kettenbeginn==1)) %>%
+  mutate(Kettenende=(kettenende==1)) %>% 
+  mutate(Kettenstart_tag=ifelse(mod(Num_in_kette,2)==1,Wochentag,other_day(Wochentag)))  %>%
+  mutate(Kettenende_tag=ifelse(mod(runden_zum_ende,2)==0,Wochentag,other_day(Wochentag))) %>% 
+  select(-starts_with("kette",ignore.case = FALSE),-num_in_k,-runden_zum_ende)
+```
+
+```{r}
+lotto_aut_condensed %>% tail(10)
+```
+
+```{r}
+save(lotto_aut_condensed,file="lotto_aut_condensed.RData")
+```

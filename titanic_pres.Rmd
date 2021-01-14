@@ -1,0 +1,141 @@
+---
+title: Wer hat auf der Titanic überlebt?<br><br><div style='font-size:60%;'>Demo für
+  LV  Grundlagen der Statistik</div>
+author: 'Erich Neuwirth<div style=''float: center''> <br><br><br><br><img src=''images/LogoFHStPoe.png''
+  width=140></div>'
+output:
+  slidy_presentation:
+    footer: Copyright © 2020, Erich Neuwirth
+    self_contained: yes
+---
+
+
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning = NA)
+```
+
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(ggmosaic)
+library(scales)
+```
+
+```{r}
+titanic_df <- as_tibble(Titanic) %>%
+  mutate(Survived=factor(Survived,levels=c("Yes","No"))) %>%
+  rename(Gender=Sex)
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+surv_colors <- gg_color_hue(2) %>% rev()
+```
+
+
+
+```{r}
+default_guide <-  ggplot2::waiver()
+```
+
+
+## Überlebende
+
+<div style='float: right;'><p style='margin-bottom : -3cm;'>&nbsp;</p></div>
+
+
+
+
+```{r, fig.height=5}
+titanic_df %>%
+  ggplot() +
+  geom_mosaic(aes(x=product(Survived),
+                  fill=Survived,weight=n),divider=c("vspine")) +
+  guides(fill=guide_legend(reverse=TRUE)) +
+  scale_fill_manual(values=surv_colors) +
+  guides(fill=guide_legend(reverse=TRUE)) +
+  scale_y_continuous("",breaks=seq(0,1,0.25),minor_breaks=NULL,labels=percent) +
+  scale_x_productlist("",breaks=NULL) +
+  theme(aspect.ratio = 3/5)
+```
+
+
+
+## Überlebende nach Geschlecht
+
+```{r, fig.height=5.2}
+titanic_df %>%
+  ggplot() +
+  geom_mosaic(aes(x=product(Survived,Gender),fill=Survived,weight=n),divider=c("vspine","hspine")) +
+  guides(fill=guide_legend(reverse=TRUE)) +
+  scale_fill_manual(values=surv_colors) +
+  guides(fill=guide_legend(reverse=TRUE)) +
+  scale_y_continuous("",breaks=seq(0,1,0.25),minor_breaks=NULL,labels=percent) +
+  scale_x_productlist("") +
+  theme(aspect.ratio = 3/5)
+```
+
+##  Überlebende nach Geschlecht und Alter
+
+```{r, fig.height=5.8}
+titanic_df %>%
+  ggplot() +
+  geom_mosaic(aes(x=product(Survived,Gender,Age),fill=Survived,weight=n),divider=c("vspine","hspine","hspine")) +
+  guides(fill=guide_legend(reverse=TRUE)) +
+  scale_fill_manual(values=surv_colors) +
+  guides(fill=guide_legend(reverse=TRUE)) +
+  scale_y_continuous("",breaks=seq(0,1,0.25),minor_breaks=NULL,labels=percent) +
+  theme(axis.text.x = element_text(angle=90)) +
+  scale_x_productlist("") +
+  theme(aspect.ratio = 3/5)
+```
+
+##   Überlebende nach Klasse
+
+```{r, fig.height=5.2}
+titanic_df %>%
+  ggplot() +
+  geom_mosaic(aes(x=product(Survived,Class),fill=Survived,weight=n),divider=c("vspine","hspine")) +
+  guides(fill=guide_legend(reverse=TRUE)) +
+  scale_fill_manual(values=surv_colors) +
+  guides(fill=guide_legend(reverse=TRUE)) +
+  scale_y_continuous("",breaks=seq(0,1,0.25),minor_breaks=NULL,labels=percent) +
+  scale_x_productlist("") +
+  theme(aspect.ratio = 3/5)
+```
+
+## Überlebende nach Geschlecht und Klasse
+
+```{r, fig.height=5.8}
+titanic_df %>%
+  filter(Age != "Child") %>% 
+  ggplot() +
+  geom_mosaic(aes(x=product(Survived,Gender,Class),fill=Survived,weight=n),divider=c("vspine","hspine","hspine")) +
+  guides(fill=guide_legend(reverse=TRUE)) +
+  scale_fill_manual(values=surv_colors) +
+  guides(fill=guide_legend(reverse=TRUE)) +
+  scale_y_continuous("",breaks=seq(0,1,0.25),minor_breaks=NULL,labels=percent) +
+  theme(axis.text.x = element_text(angle=90)) +
+  scale_x_productlist("Gender:Class") +
+  theme(aspect.ratio = 3/5)
+```
+
+## Überlebende nach Klasse und Geschlecht
+
+```{r, fig.height=5.8}
+titanic_df %>%
+  filter(Age != "Child") %>% 
+  ggplot() +
+  geom_mosaic(aes(x=product(Survived,Class,Gender),fill=Survived,weight=n),divider=c("vspine","hspine","hspine")) +
+  guides(fill=guide_legend(reverse=TRUE)) +
+  scale_fill_manual(values=surv_colors) +
+  guides(fill=guide_legend(reverse=TRUE)) +
+  scale_y_continuous("",breaks=seq(0,1,0.25),minor_breaks=NULL,labels=percent) +
+  scale_x_productlist("Gender:Class") +
+  theme(axis.text.x = element_text(angle=90)) +
+#  scale_x_productlist("Class:Gender") +
+  theme(aspect.ratio = 3/5)
+```
+

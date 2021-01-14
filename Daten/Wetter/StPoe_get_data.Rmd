@@ -1,0 +1,58 @@
+---
+title: "Temperatur St. Pölten"
+author: "Erich Neuwirth"
+date: "10/1/202-"
+output: html_document
+---
+
+  
+package stationaRy from CRAN
+# https://github.com/rich-iannone/stationaRy
+https://www1.ncdc.noaa.gov/pub/data/ish/ish-format-document.pdf
+ftp://ftp.ncdc.noaa.gov/pub/data/noaa/
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(stationaRy)
+library(ggplot2)
+library(magrittr)
+library(dplyr)
+library(knitr)
+library(lubridate)
+library(tidyr)
+stpoe<-"110280-99999"
+stpoe_lh <- "113890-99999"
+```
+
+
+```{r}
+filename <- file.path("stpoelten.RData")
+#if (file.exists(filename)) {
+#  load(filename)
+#} else {
+  met_data <- get_met_data(station_id = stpoe_lh)
+#                                   startyear = 2008,
+#                                   endyear = 2020)
+  stpoelten_data <- met_data
+  save(stpoelten_data, file = filename)
+  print("data received and saved")
+#}
+```
+
+```{r}
+stpoelten_data %>% 
+  filter(!is.na(temp)) %>%
+  mutate(hr=hour(time)) %>%
+  mutate(yr=year(time)) %>%
+  group_by(yr,hr) %>% 
+  tally()  %>%
+  spread(yr,n)
+
+
+```
+
+
