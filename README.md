@@ -175,7 +175,7 @@ Wenn sie Linux oder MacOS verwenden installieren sie bitte R (Version 4.0.3) und
 von den genannten Websites (es gibt dort auch Versionen für diese Betriebssysteme).    
 
 Git müssen sie ebenfalls installieren. Zur Installation ziehen
-sie das Internet zu Raten.     
+sie das Internet zu Rate.     
 Unter MacOS ist für solche Utilities die Installation von homebrew (https://brew.sh) sehr zu empfehlen.
 
 Unter MaOS müssen Sie auch noch Xquartz von (https://www.xquartz.org) installieren.
