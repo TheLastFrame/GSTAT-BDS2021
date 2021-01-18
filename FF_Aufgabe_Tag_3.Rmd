@@ -1,0 +1,106 @@
+---
+title: "Aufgabe Tag 3 - Aufgabe von Tag 2 in R"
+author: "Fabian Fiedler"
+date: "18.01.2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, comment=NULL)
+```
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(readxl)
+library(knitr)
+```
+
+```{r}
+studdat <- read_excel(file.path("Daten","StudierendenDaten",
+                                "StudDat.xlsx"))
+```
+# Aufgabe 1: Zusammenhang Körpergröße & Gewicht
+
+```{r}
+studdat %>%
+  select(Gender, Size, Weight) %>%
+  drop_na()%>%
+  ggplot(aes(x=Size, y=Weight, color=Gender)) + 
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE) +
+  scale_x_continuous("Größe") + 
+  scale_y_continuous("Gewicht")
+```
+
+Wie man anhand der Grafik sehen kann, ist die Steigung der Geraden realtiv gleich und man kann somit davon ausgehen, dass der Zusammenhang zwischen Gewicht und Körpergröße für beide Geschlechter gleich ist.
+					
+					
+*(Alle Daten bei denen entweder die Größe oder das Gewicht gefehlt haben, wurden aus der Analyse ausgenommen.)*
+
+\newpage
+# Aufgabe 2: Regressionsanalyse - Zusammenhang Körpergröße Eltern & Studierende
+```{r}
+studdat %>%
+  select(Gender, Size, SizeMother, SizeFather)%>%
+  drop_na()%>%
+  summarize(Gender, Size, SizeParents=(SizeMother+SizeFather)/2) %>%
+#  filter(Gender=="male") %>%
+  lm(Size ~ SizeParents, data=.)
+```
+
+Anhand des Regressionskoeffizenten kann man sehen, dass für jeden cm den die Eltern durchschnittlich groß sind, das Kind durchschnittlich ca 0,7 cm groß ist.					
+
+					
+*(Alle Daten bei denen eine der Größen gefehlt hat, wurden aus der Analyse ausgenommen.)*
+					
+
+
+\newpage
+# Aufgabe 3: Zusammenhang Rauchverhalten zwischen Eltern und Studiernenden
+
+## Vater
+```{r}
+studdat %>%
+  select(Gender, Smoker, SmokeFather, SmokeMother) %>%
+  drop_na()%>%
+  group_by(Smoker, SmokeFather) %>%
+  tally() -> table_father
+```
+
+```{r}
+table_father %>%
+  select(SmokeFather, Smoker, n) %>%
+  pivot_wider(names_from = SmokeFather, values_from=n) %>%
+  rename(Smoker_yes=yes, Smoker_no=no) %>%
+  mutate(Smoking=Smoker_yes+Smoker_no)  %>%
+  mutate(Smoker_no=Smoker_no/Smoking, Smoker_yes=Smoker_yes/Smoking) %>%
+  select(-Smoking) %>%
+  kable(digits=3)
+```
+\newpage
+## Mutter
+```{r}
+studdat %>%
+  select(Gender, Smoker, SmokeFather, SmokeMother) %>%
+  drop_na() %>%
+  group_by(Smoker, SmokeMother) %>%
+  tally() -> table_mother
+```
+
+```{r}
+table_mother %>%
+  select(SmokeMother, Smoker, n) %>%
+  pivot_wider(names_from = SmokeMother, values_from=n) %>%
+  rename(Smoker_yes=yes, Smoker_no=no) %>%
+  mutate(Smoking=Smoker_yes+Smoker_no) %>%
+  mutate(Smoker_no=Smoker_no/Smoking, Smoker_yes=Smoker_yes/Smoking) %>%
+  select(-Smoking) %>%
+  kable(digits=3)
+```
+
+Anhand der Analyse kann man sehen, dass das Rauchverhalten des Vaters mehr Auswirkungen auf das der Studierenden hat, aber generell gesagt kann man keinen definitiven Einfluss des Rauchverhaltens der Eltern auf das der Kinder sehen.
+
+
+
+*(Alle Daten bei denen eines der Rauchverhalten gefehlt hat, wurden aus der Analyse ausgenommen. Da hier das ignorieren Fehlender Daten für Mutter und Vater leichter ist, werden die Berechnungen zu denen die ich in Excel gemacht habe abweichen, da in Excel nur Daten spezifisch für jede Einzelberechnung ausgenommen wurden und nicht gemeinsam für beide Berechnungen wie hier.(z.B.: Wenn SmokeMother fehlt wurde es in Excel bei der Berechnung der Mutter ausgenommen, aber nicht beim Vater, wenn in SmokeVater ein Wert vorhanden war.))*
