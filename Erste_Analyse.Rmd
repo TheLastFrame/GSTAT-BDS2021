@@ -1,0 +1,27 @@
+---
+title: "Erste Analyse"
+author: "Erich Neuwirth"
+date: "1/18/2021"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(readxl)
+```
+
+```{r}
+studdat <- read_excel(file.path("Daten","StudierendenDaten",
+                                "StudDat.xlsx"))
+```
+
+```{r}
+names(studdat)
+```
+
+```{r}
+studdat %>% names()
+```
+
