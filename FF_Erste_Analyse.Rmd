@@ -128,3 +128,23 @@ table_father %>%
   select(-Smoker) %>%
   kable(digits=3)
 ```
+
+Regressionskoeffizient(Gewicht - Größe):
+```{r}
+lm(Weight ~ Size, data=studdat)
+```
+Regressionskoeffizient (Gewicht - Größe) Männer:
+```{r}
+studdat %>%
+  select(Gender, Size, Weight)%>%
+  filter(Gender=="male") %>%
+  lm(Weight ~ Size, data=.)
+```
+Regressionskoeffizient (Gewicht - Größe) Frauen:
+```{r}
+studdat %>%
+  select(Gender, Size, Weight)%>%
+  filter(Gender=="male") %>%
+  lm(Weight ~ Size, data=.)
+```
+
