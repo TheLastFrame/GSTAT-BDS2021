@@ -45,7 +45,71 @@ studdat %>%
 studdat %>%
   select(Gender, Size, Weight) %>%
   drop_na()%>%
-  ggplot(aes(x=Size, y=Weight)) + geom_point()
+  ggplot(aes(x=Size, y=Weight, color=Gender)) + 
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE) +
+  scale_x_continuous("Größe") + 
+  scale_y_continuous("Gewicht")
 ```
 
+```{r}
+studdat %>%
+  select(Gender, SizeFather, SizeMother) %>%
+  drop_na()%>%
+  ggplot(aes(x=SizeFather, y=SizeMother)) +
+  geom_jitter() + 
+  geom_abline(xintercept=0, slope=1, color="orange") + 
+  geom_smooth(method="lm", se=FALSE) + 
+  geom_smooth(se=FALSE, color="red")
+#alles was unter linie liegt = väter größer als mutter
+#alles drüber ist mutter größer als vater
+```
+```
+Erlärung für Überliegende Abbildung:
+
+Orange Gerade:
+Punkt auf der Gerade = Mann & Frau Gleich groß
+Alles was unter linie liegt = Vater größer als Mutter
+Alles drüber ist = Mutter größer als Vater
+
+Blaue Gerade = Regressionsgerade
+```
+
+```{r}
+studdat %>%
+  select(Gender, Size, Weight) %>%
+  drop_na()%>%
+  ggplot(aes(x=Size, y=Weight, color=Gender)) +
+  geom_boxplot()
+```
+
+```{r}
+studdat %>%
+  select(Gender, Size, Weight) %>%
+  drop_na()%>%
+  ggplot(aes(x=Size, fill=Gender)) +
+  geom_density(alpha=0.8)
+```
+
+```{r}
+studdat %>%
+  select(Gender, Size, Weight) %>%
+  drop_na()%>%
+  ggplot(aes(x=Size, y=Weight, color=Gender)) + 
+  geom_point(alpha=0.2, size=5) +
+  geom_smooth(method="lm", se=FALSE) +
+  scale_x_continuous("Größe") + 
+  scale_y_continuous("Gewicht")
+```
+
+```{r}
+studdat %>%
+  select(Gender, SizeFather, SizeMother) %>%
+  drop_na()%>%
+  ggplot(aes(x=SizeFather, y=SizeMother)) +
+  geom_jitter() + 
+  geom_abline(xintercept=0, slope=1, color="orange") + 
+  geom_smooth(method="lm", se=FALSE) + 
+  geom_smooth(se=FALSE, color="red")
+```
 
