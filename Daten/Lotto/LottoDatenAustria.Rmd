@@ -10,27 +10,48 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-
-
 ```{r, message=FALSE}
 library(tidyverse)
 library(magrittr)
 library(readxl)
 library(pracma)
 library(readr)
+library(writexl)
 ```
 
 
 ```{r}
-curl::curl_download("https://www.win2day.at/media/NN_W2D_STAT_Lotto_2020.csv",
-                    file.path("Lottodata","NN_W2D_STAT_Lotto_2020.csv"))
+curl::curl_download("https://www.win2day.at/media/NN_W2D_STAT_Lotto_2021.csv",
+                    file.path("Lottodata","NN_W2D_STAT_Lotto_2021.csv"))
 ```
 
+
+
+```{r}
+curl::curl_download("https://www.win2day.at/media/NN_W2D_STAT_Lotto_2021.csv",
+                    file.path("Lottodata","NN_W2D_STAT_Lotto_2021.csv"))
+```
+
+
+
+```{r}
+try(curl::curl_download(
+#  "https://www.win2day.at/media/NN_W2D_STAT_Lotto_2020.csv",
+  "https://www.win2day.at/media/NN_W2D_STAT_Lotto_2021.csv",
+  file.path("Lottodata","NN_W2D_STAT_Lotto_2021.csv")),silent=TRUE) -> res
+if(class(res) == "try-error"){
+  cmd <- paste("curl https://www.win2day.at/media/NN_W2D_STAT_Lotto_2021.csv",
+               "--output Lottodata/NN_W2D_STAT_Lotto_2021.csv")
+  system(cmd)
+}
+  
+```
 
 https://www.win2day.at/media/NN_W2D_STAT_Lotto_2020.csv
 
+
 ```{r}
-load("lotto_aut_upto_2019.RData")
+load("lotto_aut_upto_2020.RData")
 ```
 
 
@@ -56,7 +77,7 @@ find_stichtag <- function(indate){
 ```
 
 ```{r}
-lnew_part <- read_csv2(file.path("Lottodata","NN_W2D_STAT_Lotto_2020.csv"),
+lnew_part <- read_csv2(file.path("Lottodata","NN_W2D_STAT_Lotto_2021.csv"),
                  locale=locale(encoding="latin1"))
 lnew_part_1 <- lnew_part %>% slice(seq(1,nrow(lnew_part),2)) %>% select(1:26)
 lnew_part_2 <- lnew_part %>% slice(seq(2,nrow(lnew_part),2)) %>% select(11:26)  %>%
@@ -69,22 +90,33 @@ names(lnew_part_2) <- paste0("var",1:ncol(lnew_part_2))
 lnew <- bind_cols(lnew_part_1,lnew_part_2)
 ```
 
-
 ```{r}
-lnew %<>% 
+lnew %>% 
   select(-starts_with("Rang",ignore.case = FALSE)) %>% 
   select(-ZZ) %>%
   mutate(Runde=1:nrow(lnew)) %>% 
-  mutate(Rtot=Runde+nrow(lotto_aut_upto_2019)) %>%
+#  mutate(Rtot=Runde+nrow(lotto_aut_upto_2019)) %>%
+  mutate(Rtot=Runde+nrow(lotto_aut_upto_2020)) %>%
   select(Datum,Runde,Rtot,Zahl1:var8,Reihenfolge) %>%
-  mutate(Datum=as.POSIXct(paste0(Datum,"2020"),format="%d.%m.%Y",tz="GMT"))  %>%
+  mutate(Datum=as.POSIXct(paste0(Datum,"2021"),
+                          format="%d.%m.%Y",tz="GMT"))  %>%
   mutate(Anzahl_1_5=as.numeric(Anzahl_1_5)) %>%
   mutate(Anzahl_1_5=ifelse(is.na(Anzahl_1_5),0,Anzahl_1_5)) %>%
   mutate(Anzahl_2_6=as.numeric(Anzahl_2_6)) %>%
-  mutate(Anzahl_2_6=ifelse(is.na(Anzahl_2_6),0,Anzahl_2_6)) 
-  names(lnew)[-(ncol(lnew))] <- names(lotto_aut_upto_2019)[1:26]
-  lotto_aut <- bind_rows(lotto_aut_upto_2019[,1:26],lnew)
+  mutate(Anzahl_2_6=ifelse(is.na(Anzahl_2_6),0,Anzahl_2_6)) -> xxx
 ```
+
+
+```{r}
+names(xxx)[-(ncol(xxx))] <- names(lotto_aut_upto_2020)[1:26] 
+```
+
+
+```{r}
+lotto_aut <- bind_rows(lotto_aut_upto_2020[,1:26],xxx)
+```
+
+
 
 ```{r}
 lotto_aut %<>% mutate(StartDatum=Vectorize(find_stichtag)(Datum))
@@ -137,7 +169,7 @@ lotto_aut %<>% mutate(Summe6=Anzahl6*Gewinn6,
 ```{r}
 lotto_aut %<>%
   mutate(Period=ifelse(Datum <= as.POSIXct("1997-09-02"),"alt","neu")) %>%
-  mutate(Typ=paste(Period,Wochentag,sep=":")) %>%
+  mutate(Typ=paste(Period,str_sub(Wochentag,1,2),sep=":")) %>%
   mutate(Typ=factor(Typ,levels=c("alt:So","neu:So","neu:Mi"))) %>%
   mutate_at(vars(Zahl1:Zahl6),list(hi=~ifelse(.>31,1,0))) %>%
   mutate(Hohe = Zahl1_hi+Zahl2_hi+Zahl3_hi+Zahl4_hi+Zahl5_hi+Zahl6_hi) %>%
@@ -157,6 +189,10 @@ lotto_aut %>% names()
 
 ```{r}
 save(lotto_aut,file="lotto_aut.RData")
+```
+
+```{r}
+lotto_aut %>% tail(10)
 ```
 
 ```{r}
@@ -200,3 +236,41 @@ lotto_aut_condensed %>% tail(10)
 ```{r}
 save(lotto_aut_condensed,file="lotto_aut_condensed.RData")
 ```
+
+```{r}
+write_xlsx(
+  lotto_aut %>%
+    select(Zahl1:Zahl6),
+  path="Lottozahlen.xlsx"
+)
+```
+
+```{r}
+lotto_aut %>%
+  filter(JackpotDavor==6)
+```
+
+
+```{r}
+lotto_aut %>%
+  filter(Anzahl6 > 0) %>%
+  filter(Währung=="EUR") %>%
+  select(Datum,Anzahl6,Gewinn6) %>%
+  arrange(desc(Gewinn6)) %>%
+  head()
+```
+
+
+
+```{r}
+write_xlsx(lotto_aut,"LottoComplete.xlsx")
+```
+
+
+```{r}
+#lotto_aut_upto_2020 %>%
+#mutate(Zahl2=ifelse(Datum==as.Date("2017-02-05"),
+#          7,Zahl2)) %>%
+#  save(file="lotto_aut_upto_2020.RData")
+```
+
