@@ -1,0 +1,38 @@
+---
+title: "Untitled"
+author: "Fabian Fiedler"
+date: "18/1/2021"knit
+output: html_document
+---
+
+Mein erstes Stück R-Code
+
+```{r}
+1:10
+```
+
+```{r}
+11:20 -> v
+```
+
+```{r}
+str(v)
+```
+
+```{r}
+v[3:5]
+```
+
+```{r}
+txt <- c("a","x","z")
+```
+
+```{r}
+str(txt)
+```
+
+```{r}
+library(readxl)
+studdat <- read_excel(file.path("Daten", "StudierendenDaten", "StudDat.xlsx"))
+```
+
