@@ -104,12 +104,27 @@ studdat %>%
 
 ```{r}
 studdat %>%
-  select(Gender, SizeFather, SizeMother) %>%
+  select(Gender,Smoker, SmokeFather, SmokeMother) %>%
   drop_na()%>%
-  ggplot(aes(x=SizeFather, y=SizeMother)) +
-  geom_jitter() + 
-  geom_abline(xintercept=0, slope=1, color="orange") + 
-  geom_smooth(method="lm", se=FALSE) + 
-  geom_smooth(se=FALSE, color="red")
+  group_by(Smoker, SmokeFather) %>%
+  tally() -> table_father
+#  summarise(n=n()) #entspricht tally() 
 ```
 
+```{r}
+table_father %>%
+  select(SmokeFather, Smoker, n) %>%
+  pivot_wider(names_from = Smoker, values_from=n) %>%
+  rename(Smoker_yes=yes, Smoker_no=no)
+```
+
+```{r}
+table_father %>%
+  select(SmokeFather, Smoker, n) %>%
+  pivot_wider(names_from = Smoker, values_from=n) %>%
+  rename(Smoker_yes=yes, Smoker_no=no) %>%
+  mutate(Smoker=Smoker_yes+Smoker_no) %>%
+  mutate(Smoker_no=Smoker_no/Smoker, Smoker_yes=Smoker_yes/Smoker) %>%
+  select(-Smoker) %>%
+  kable(digits=3)
+```
