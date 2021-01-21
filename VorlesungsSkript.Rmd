@@ -1,7 +1,7 @@
 ---
 title: "Vorlesungsskript Statistik (DSBA)"
 author: "Erich Neuwirth"
-date: "18. Jänner 2021"
+date: "21. Jänner 2021"
 output:
   pdf_document:
     toc: yes
@@ -253,7 +253,7 @@ Verwendet bei Mittelung von Geschwindigkeit für vorgegebene Teilstrecken
 
 Allgemeiner $p$-Mittelwert
 
-$$x_p=\sqrt[p]{\sum_{i=1}^{n}{x_i}^p}$$
+$$x_p=\sqrt[p]{\frac{1}{n}\sum_{i=1}^{n}{x_i}^p}$$
 
 
 Nur bei positiven $x_i$ sinnvoll
@@ -723,8 +723,35 @@ tibble(x=c(0,1),y=c(0,1)) %>%
   stat_function(fun=function(p)pbinom(lower_limit,n,p)+1-pbinom(upper_limit,n,p)) 
 ```
 
+
+### Binomialtest mit Normalverteilungsapproximation
+
+$X$ Binomialverteiltes Experiment
+
+$\hat{p}$ Anteil in der Stichprobe
+
+$p_0$ Nullhypothese
+
+$\frac{\hat{p}-p_0}{\sqrt{n\hat{p}(1-\hat{p})}}$ ist normalverteilt.
+
+Wir rechnen mit Sicherheit $\alpha=0.95$
+
+
+$$-1.96 \leq \frac{\hat{p}-p_0}
+{\sqrt{
+\frac{\hat{p}(1-\hat{p})}{n}}} \leq 1.96
+$$
+
+Ungeformt
+
+$$\hat{p}-1.96\sqrt{n\hat{p}(1-\hat{p})} \leq p \leq \hat{p}+1.96\sqrt{n\hat{p}(1-\hat{p})}
+$$
+Das ist ein Konfidenzintervall
+
 Wichtige statistische Tests
 
+
+### t-Test
 Wenn wir 2 Messreihen $x_1, x_2, \ldots x_n$ und $y_1, y_2 \ldots y_m$ haben, dann sind nach dem
 zentralen Grenzwertsatz die Mittelwerte $\bar{x}$ und $\bar{y}$ annähernd normalverteilt.
 Die Stichprobenvarianzen sind dann $s_x^2$ und $s_y^2$.
@@ -765,6 +792,7 @@ studdat %>%
   t.test(Size ~ Gender,var.equal=FALSE)
 ```
 
+### $\chi^2$-Test
 
 Ein weiterer wichtiger Test ist der $\chi^2$-Test.
 
@@ -808,5 +836,81 @@ studdat %>%
   select(Gender,Mathgrade) %>%
   drop_na() %>% table() %>%
   chisq.test()
+```
+
+
+### Varianzalyse
+
+```{r}
+studdat %>%
+  select(SmokeMother,Size) %>%
+  drop_na() %>%
+  aov(Size ~ SmokeMother,data=.) %>%
+  summary()
+```
+
+
+```{r}
+studdat %>%
+  select(SmokeMother,Size) %>%
+  drop_na() %>%
+  lm(Size ~ SmokeMother,data=.) %>%
+  summary()
+```
+
+
+### Korrelations- und Regressionsanalyse
+
+
+
+```{r}
+studdat %>%
+  filter(Gender=="male") %>%
+  select(Size,Weight) %>%
+  drop_na() %>%
+  lm(Weight ~ Size, data=.) 
+```
+
+
+```{r}
+studdat %>%
+  filter(Gender=="male") %>%
+  select(Size,Weight) %>%
+  drop_na() %>%
+  lm(Weight ~ Size, data=.) %>%
+  summary()
+```
+
+
+
+```{r}
+studdat %>%
+  filter(Gender=="female") %>%
+  select(Size,Weight) %>%
+  drop_na() %>%
+  lm(Weight ~ Size, data=.) %>%
+  summary()
+```
+
+
+```{r}
+studdat %>%
+  filter(Gender=="male") %>%
+  select(Size,SizeFather,SizeMother) %>%
+  drop_na() %>%
+  lm(Size ~ SizeFather + SizeMother, data=.) %>%
+  summary()
+```
+
+
+```{r}
+studdat %>%
+  filter(Gender=="male") %>%
+  drop_na() %>%
+  select(Size,SizeFather,SizeMother,SmokeMother) %>%
+  drop_na() %>%
+  lm(Size ~ SizeFather + SizeMother + SmokeMother,
+     data=.) %>%
+  summary()
 ```
 
