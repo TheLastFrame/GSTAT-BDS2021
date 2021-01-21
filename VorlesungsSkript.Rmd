@@ -734,6 +734,16 @@ $p_0$ Nullhypothese
 
 $\frac{\hat{p}-p_0}{\sqrt{n\hat{p}(1-\hat{p})}}$ ist normalverteilt.
 
+Wir brauchen jetzt noch Werte aus der Normalverteilung.
+
+Für eine Standard-Normalverteilung $X$ ist folgende Schreibweise üblich:
+
+$$P(-K_\alpha \leq X \leq K_\alpha) = \alpha
+$$
+
+Für $\alpha=0.95$ gilt $K_\alpha=1.96$ und
+für $\alpha=0.99$ gilt $K_\alpha=2.58$ und
+
 Wir rechnen mit Sicherheit $\alpha=0.95$
 
 
@@ -744,7 +754,8 @@ $$
 
 Ungeformt
 
-$$\hat{p}-1.96\sqrt{n\hat{p}(1-\hat{p})} \leq p \leq \hat{p}+1.96\sqrt{n\hat{p}(1-\hat{p})}
+$$\hat{p}-1.96\sqrt{\frac{\hat{p}(1-\hat{p})}{n}} \leq p \leq 
+\hat{p}+1.96\sqrt{\frac{\hat{p}(1-\hat{p})}{n}}
 $$
 Das ist ein Konfidenzintervall
 
