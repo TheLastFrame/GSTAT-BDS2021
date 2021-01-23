@@ -22,6 +22,9 @@ studdat <- read_excel(file.path("Daten","StudierendenDaten",
 ```
 # Aufgabe 1: Zusammenhang Körpergröße & Gewicht
 
+**Aufgabenstellung:**\newline
+Untersuchen sie, ob der Zusammenhang zwischen Körpergröße und Gewicht bei männlichen und weiblichen Studierenden durch eine ähnliche  oder gleiche (lineare) Funktion wiedergegeben werden kann.
+
 ```{r}
 studdat %>%
   select(Gender, Size, Weight) %>%
@@ -33,13 +36,17 @@ studdat %>%
   scale_y_continuous("Gewicht")
 ```
 
-Wie man anhand der Grafik sehen kann, ist die Steigung der Geraden realtiv gleich und man kann somit davon ausgehen, dass der Zusammenhang zwischen Gewicht und Körpergröße für beide Geschlechter gleich ist.
+Wie man anhand der Grafik sehen kann, ist die Steigung der Geraden realtiv gleich und man kann somit davon ausgehen, dass der Zusammenhang zwischen Gewicht und Körpergröße für beide Geschlechter gleich ist.\newline\newline\newline
 					
 					
 *(Alle Daten bei denen entweder die Größe oder das Gewicht gefehlt haben, wurden aus der Analyse ausgenommen.)*
 
 \newpage
 # Aufgabe 2: Regressionsanalyse - Zusammenhang Körpergröße Eltern & Studierende
+
+**Aufgabenstellung:**\newline
+Untersuchen sie mittels Regressionsanalyse den Zusammenhang zwischen Körpergröße der Studierenden und deren Eltern. Interpretieren sie die Koeffizienten dieser Gleichung.
+
 ```{r}
 studdat %>%
   select(Gender, Size, SizeMother, SizeFather)%>%
@@ -49,7 +56,7 @@ studdat %>%
   lm(Size ~ SizeParents, data=.)
 ```
 
-Anhand des Regressionskoeffizenten kann man sehen, dass für jeden cm den die Eltern durchschnittlich groß sind, das Kind durchschnittlich ca 0,7 cm groß ist.					
+Anhand des Regressionskoeffizenten kann man sehen, dass für jeden cm den die Eltern durchschnittlich groß sind, das Kind durchschnittlich ca 0,7 cm groß ist.\newline\newline\newline
 
 					
 *(Alle Daten bei denen eine der Größen gefehlt hat, wurden aus der Analyse ausgenommen.)*
@@ -58,6 +65,9 @@ Anhand des Regressionskoeffizenten kann man sehen, dass für jeden cm den die El
 
 \newpage
 # Aufgabe 3: Zusammenhang Rauchverhalten zwischen Eltern und Studiernenden
+
+**Aufgabenstellung:**\newline
+Untersuchen Sie den Zusammenhang zwischen Rauchverhalten der Studierenden und deren Eltern mit Kontingenztafelanalyse (man nennt die Tabellen auch Kreistabellen). Beeinflusst das Rauchverhalten der Eltern (oder eines Elternteils) das Rauchverhalten ihrer Kinder?,
 
 ## Vater
 ```{r}
@@ -99,8 +109,27 @@ table_mother %>%
   kable(digits=3)
 ```
 
-Anhand der Analyse kann man sehen, dass das Rauchverhalten des Vaters mehr Auswirkungen auf das der Studierenden hat, aber generell gesagt kann man keinen definitiven Einfluss des Rauchverhaltens der Eltern auf das der Kinder sehen.
-
+Anhand der Analyse kann man sehen, dass das Rauchverhalten des Vaters mehr Auswirkungen auf das der Studierenden hat, aber generell gesagt kann man keinen definitiven Einfluss des Rauchverhaltens der Eltern auf das der Kinder sehen.\newline\newline\newline
 
 
 *(Alle Daten bei denen eines der Rauchverhalten gefehlt hat, wurden aus der Analyse ausgenommen. Da hier das ignorieren Fehlender Daten für Mutter und Vater leichter ist, werden die Berechnungen zu denen die ich in Excel gemacht habe abweichen, da in Excel nur Daten spezifisch für jede Einzelberechnung ausgenommen wurden und nicht gemeinsam für beide Berechnungen wie hier.(z.B.: Wenn SmokeMother fehlt wurde es in Excel bei der Berechnung der Mutter ausgenommen, aber nicht beim Vater, wenn in SmokeVater ein Wert vorhanden war.))*
+
+\newpage
+# Aufgabe 4 (mündlich): Boxplot Diagramm und Dichtediagramm
+
+```{r}
+studdat %>%
+  select(Gender, Size, Weight) %>%
+  drop_na() %>%
+  ggplot(aes(x=Gender,y=Size,color=Gender)) +
+  geom_boxplot()
+```
+
+```{r}
+studdat %>%
+  select(Gender, Size, Weight) %>%
+  drop_na() %>%
+  ggplot(aes(x=Size, fill=Gender)) +
+  geom_density(alpha=0.5)
+```
+

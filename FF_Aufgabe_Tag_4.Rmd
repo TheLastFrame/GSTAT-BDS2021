@@ -1,0 +1,119 @@
+---
+title: "Aufgabe Tag 4"
+author: "Fabian Fiedler"
+date: "22.01.2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, comment=NULL)
+```
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(readxl)
+library(knitr)
+```
+
+```{r}
+studdat <- read_excel(file.path("Daten","StudierendenDaten",
+                                "StudDat.xlsx"))
+```
+
+# Zusammenhang zwischen Körpergrößen weiblicher Studierender und deren Eltern.
+
+```{r}
+studdat %>%
+filter(Gender=="female") %>%
+drop_na() %>%
+select(Size,SizeFather,SizeMother) %>%
+lm(Size ~ SizeFather + SizeMother,
+data=.) %>%
+summary()
+```
+
+
+# Besteht ein signifikanter Unterschied im Gewicht von Männern und Frauen?
+
+```{r}
+studdat %>%
+select(Weight,Gender) %>%
+drop_na() %$%
+t.test(Weight ~ Gender,var.equal=FALSE)
+```
+
+ 
+# Besteht ein Zusammenhang zwischen Deutschnote und Englischnote (untersuchen Sie das getrennt für Männer und Frauen)
+
+```{r}
+studdat %>% 
+  filter(Gender=="male") %>%
+  select(Germangrade, Englishgrade) %>%
+  drop_na() %>% table() %>%
+  chisq.test()
+```
+
+Ja es besteht ein Zusammenhang zwischen der Deutsch- und Englischnote. Dies wird durch den p-value von 2.2e-16 bestätigt.
+
+## Studentin:
+```{r}
+studdat %>% 
+  filter(Gender=="female") %>%
+  select(Germangrade, Englishgrade) %>%
+  drop_na() %>% table() %>%
+  chisq.test()
+```
+
+Ja es besteht ein Zusammenhang zwischen der Deutsch- und Englischnote. Dies wird durch den p-value von 1.086e-15 bestätigt.
+
+\newpage
+# Untersuchen Sie, ob das Rauchverhalten des gleichgeschlechtlichen Elternteils Einfluss auf das Rauchverhalten der Kinder hat.
+
+## Student und Vater:
+```{r}
+studdat %>%
+  filter(Gender=="male") %>%
+  select(Smoker, SmokeFather) %>%
+  drop_na() %>% table() %>%
+  chisq.test()
+```
+Die h0, mit einem p-wert von 0.3083, trifft zu, sprich das Rauchverhalten der männlichen Studenten ist nicht abhängig vom Rauchverhalten des Vaters.
+
+## Student und Mutter:
+```{r}
+studdat %Y%
+  filter(Gender=="female") %>%
+  select(Smoker, SmokeMother) %>%
+  drop_na() %>% table() %>%
+  chisq.test()
+```
+Die h0, mit einem p-wert von 0.01695, trifft zu, sprich das Rauchverhalten der weiblichen Studenten ist nicht abhängig vom Rauchverhalten der Mutter.
+
+
+\newpage
+# Untersuchen Sie, ob der Bildungsgrad der Eltern mit der Deutschnote der Studierenden zusammenhängt
+
+**Untersuchung: Welchen Einfluss hat der Bildungsgrad der Eltern auf die Deutschnote der Studierenden?**
+
+```{r}
+studdat %>%
+  select(Germangrade, EduMother, EduFather) %>%
+  drop_na() %>%
+  lm(Germangrade ~ EduMother + EduFather, data=.) %>%
+  summary()
+```
+
+Bei den Studierenden wo die Mutter nur einen Pflichtschulabschluss hat ist der Einfluss negativ auf die Deutschnotee der Studierenden.
+Ansonsten gibt es keine wirkliche Korelation im Zusammenhang Bildunggrad der Eltern und der Deutschnote der Studierenden.
+
+\newpage
+# Untersuchen Sie, ob zwischen Gewicht und Rauchverhalten der Studierenden ein Zusammenhang feststellbar ist.
+```{r}
+studdat %>%
+  select(Weight, Smoker) %>%
+  drop_na() %>%
+  aov(Weight ~ Smoker, data=.) %>%
+  summary()
+```
+Es besteht kein direkter Zusammenhang zwischen Gewicht und Rauchverhalten der Studierenden, belegt wird dies durch einen p-wert von 0.534.
